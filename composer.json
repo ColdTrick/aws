@@ -1,0 +1,21 @@
+{
+	"name": "coldtrick/aws",
+	"description": "Amazon Web Services wrapper",
+	"type": "elgg-plugin",
+	"keywords": ["elgg", "plugin", "aws", "amazon"],
+	"license": "GPL-2.0",
+	"support": {
+		"source": "https://github.com/ColdTrick/aws",
+		"issues": "https://github.com/ColdTrick/aws/issues"
+	},
+	"require": {
+		"composer/installers": "^1.0.8"
+	},
+	"require-dev": {
+		"coldtrick/sniffs": "dev-master",
+		"coldtrick/releases": "dev-master"
+	},
+	"conflict": {
+		"elgg/elgg": "<2.3"
+	}
+}
