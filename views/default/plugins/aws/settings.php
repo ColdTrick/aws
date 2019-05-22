@@ -36,6 +36,7 @@ $s3_config .= elgg_view_field([
 	'name' => 'params[s3_region]',
 	'value' => $plugin->s3_region,
 	'options_values' => [
+		'' => elgg_echo('aws:settings:s3:region:select'),
 		'us-east-2' => elgg_echo('aws:settings:s3:region:us-east-2'),
 		'us-east-1' => elgg_echo('aws:settings:s3:region:us-east-1'),
 		'us-west-1' => elgg_echo('aws:settings:s3:region:us-west-1'),
