@@ -3,7 +3,7 @@
 	"description": "Amazon Web Services wrapper",
 	"type": "elgg-plugin",
 	"keywords": ["elgg", "plugin", "aws", "amazon"],
-	"license": "GPL-2.0",
+	"license": "GPL-2.0-only",
 	"support": {
 		"source": "https://github.com/ColdTrick/aws",
 		"issues": "https://github.com/ColdTrick/aws/issues"
