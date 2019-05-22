@@ -142,16 +142,13 @@ function aws_get_object_by_uri($uri) {
 		return false;
 	}
 	
-	$s3client = aws_get_s3_client();
-	if (empty($s3client)) {
+	$pr = aws_parse_s3_uri($uri);
+	if (empty($pr)) {
 		return false;
 	}
 	
-	$parser = new S3UriParser();
-	try {
-		$pr = $parser->parse($uri);
-	} catch (Exception $e) {
-		elgg_log(__METHOD__ . " parsing failed for URI '{$uri}': {$e->getMessage()}", 'WARNING');
+	$s3client = aws_get_s3_client();
+	if (empty($s3client)) {
 		return false;
 	}
 	
@@ -162,6 +159,29 @@ function aws_get_object_by_uri($uri) {
 		]);
 	} catch (\Exception $e) {
 		elgg_log(__METHOD__ . " failed for URI '{$uri}': {$e->getMessage()}");
+	}
+	
+	return false;
+}
+
+/**
+ * Parse an S3 uri to usable information
+ *
+ * @param string $uri the uri to parse
+ *
+ * @return false|array
+ */
+function aws_parse_s3_uri($uri) {
+	
+	if (empty($uri) || !is_string($uri)) {
+		return false;
+	}
+	
+	$parser = new S3UriParser();
+	try {
+		return $parser->parse($uri);
+	} catch (Exception $e) {
+		elgg_log(__METHOD__ . " parsing failed for URI '{$uri}': {$e->getMessage()}", 'WARNING');
 	}
 	
 	return false;

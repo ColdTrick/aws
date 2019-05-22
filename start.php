@@ -16,4 +16,9 @@ elgg_register_event_handler('init', 'system', 'aws_init');
  */
 function aws_init() {
 
+	// register events
+	elgg_register_event_handler('delete', 'object', 'ColdTrick\AWS\Events::deleteObject');
+	
+	// plugin hooks
+	elgg_register_plugin_hook_handler('cron', 'minute', 'ColdTrick\AWS\Cron::cleanupS3');
 }
