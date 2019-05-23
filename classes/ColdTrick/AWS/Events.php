@@ -9,7 +9,7 @@ class Events {
 	 *
 	 * @param string      $event  'delete'
 	 * @param string      $type   'object'
-	 * @param \ElggObject $object the \ELggObject being removed
+	 * @param \ElggObject $object the \ElggObject being removed
 	 *
 	 * @return void
 	 */
