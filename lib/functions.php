@@ -8,6 +8,7 @@ use Aws\S3\S3Client;
 use Aws\S3\ObjectUploader;
 use Elgg\EntityDirLocator;
 use Aws\S3\S3UriParser;
+use Aws\Rekognition\RekognitionClient;
 
 /**
  * Get the aws credentials
@@ -40,12 +41,56 @@ function aws_get_s3_client() {
 		return false;
 	}
 	
-	return new S3Client([
-		'credentials' => $credentials,
-		'region' => $region,
-		'version' => '2006-03-01',
-		'scheme' => $scheme,
-	]);
+	try {
+		return new S3Client([
+			'credentials' => $credentials,
+			'region' => $region,
+			'version' => '2006-03-01',
+			'scheme' => $scheme,
+			'http' => [
+				'connect_timeout' => 2,
+				'timeout' => 5,
+			],
+		]);
+	} catch (\Exception $e) {
+		elgg_log(__METHOD__ . " failed to create a client: {$e->getMessage()}");
+	}
+	
+	return false;
+}
+
+/**
+ * Get a RekognitionClient for text/facial rekognition
+ *
+ * @return false|\Aws\Rekognition\RekognitionClient
+ */
+function aws_get_rekognition_client() {
+	
+	$credentials = aws_get_credentials();
+	$region = elgg_get_plugin_setting('s3_region', 'aws');
+	$scheme = elgg_get_plugin_setting('s3_scheme', 'aws', 'https');
+	
+	if (empty($credentials) || empty($region) || !in_array($scheme, ['http', 'https'])) {
+		return false;
+	}
+	
+	try {
+		return new RekognitionClient([
+			'credentials' => $credentials,
+			'region' => $region,
+			'version' => '2016-06-27',
+			'scheme' => 'https',
+			'http' => [
+				'connect_timeout' => 2,
+				'timeout' => 10,
+				'verify' => $scheme === 'https',
+			],
+		]);
+	} catch (\Exception $e) {
+		elgg_log(__METHOD__ . " failed to create a client: {$e->getMessage()}");
+	}
+	
+	return false;
 }
 
 /**
@@ -61,6 +106,11 @@ function aws_upload_file(\ElggFile $file) {
 		return false;
 	}
 	
+	$key = aws_get_entity_key($file);
+	if (empty($key)) {
+		return false;
+	}
+	
 	$bucket = elgg_get_plugin_setting('s3_bucket', 'aws');
 	$s3client = aws_get_s3_client();
 	
@@ -68,15 +118,17 @@ function aws_upload_file(\ElggFile $file) {
 		return false;
 	}
 	
-	// Store files in S3 under dir structure <bucket size>/guid
-	$dir_locator = new EntityDirLocator($file->guid);
-	$key = rtrim($dir_locator->getPath(), '/');
-	
 	$uploader = new ObjectUploader(
 		$s3client,
 		$bucket,
 		$key,
-		$file->grabFile()
+		$file->grabFile(),
+		'private',
+		[
+			'params' => [
+				'ContentType' => $file->getMimeType(),
+			],
+		]
 	);
 	
 	try {
@@ -95,38 +147,28 @@ function aws_upload_file(\ElggFile $file) {
 }
 
 /**
- * Try to get an object from AWS S3 by GUID
+ * Generate a key for use in S3
  *
- * @param int $guid the guid to fetch
+ * @param ElggFile $entity the file to create the key for
  *
- * @return false|\Aws\Result
+ * @return false|string
  */
-function aws_get_object_by_guid($guid) {
+function aws_get_entity_key(ElggFile $entity) {
 	
-	$guid = (int) $guid;
-	if ($guid < 1) {
+	if ($entity->guid < 1) {
 		return false;
 	}
 	
-	$s3client = aws_get_s3_client();
-	$bucket = elgg_get_plugin_setting('s3_bucket', 'aws');
-	if (empty($s3client) || empty($bucket)) {
-		return false;
-	}
-	
-	$dir_locator = new EntityDirLocator($guid);
+	// Store files in S3 under dir structure <bucket size>/guid.ext
+	$dir_locator = new EntityDirLocator($entity->guid);
 	$key = rtrim($dir_locator->getPath(), '/');
 	
-	try {
-		return $s3client->getObject([
-			'Bucket' => $bucket,
-			'Key' => $key,
-		]);
-	} catch (\Exception $e) {
-		elgg_log(__METHOD__ . " failed for GUID '{$guid}': {$e->getMessage()}");
+	$extension = pathinfo($entity->getFilenameOnFilestore(), PATHINFO_EXTENSION);
+	if (!empty($extension)) {
+		$key .= ".{$extension}";
 	}
 	
-	return false;
+	return $key;
 }
 
 /**
@@ -222,4 +264,49 @@ function aws_get_supported_upload_subtypes() {
 	}
 	
 	return array_values($subtypes);
+}
+
+/**
+ * Detect text in ElggFile
+ *
+ * @param ElggFile $entity the file to scan (should be an image)
+ * @param array    $params result set filters
+ *
+ * @return false|string[]|array
+ */
+function aws_detect_text(ElggFile $entity, array $params = []) {
+	
+	
+	
+	
+	if (empty($entity->aws_object_url) || $entity->getSimpleType() !== 'image') {
+		return false;
+	}
+	
+	$rekog_client = aws_get_rekognition_client();
+	if (empty($rekog_client)) {
+		return false;
+	}
+	
+	$pr = aws_parse_s3_uri($entity->aws_object_url);
+	
+	try {
+		$result = $rekog_client->detectText([
+			'Image' => [
+				'S3Object' => [
+					'Bucket' => elgg_extract('bucket', $pr),
+					'Name' => elgg_extract('key', $pr),
+				],
+			],
+		]);
+	} catch (\Exception $e) {
+		return false;
+	}
+	
+	$texts = $result->get('TextDetections');
+	if (empty($texts)) {
+		return [];
+	}
+	
+	var_dump($texts);
 }
