@@ -21,4 +21,5 @@ function aws_init() {
 	
 	// plugin hooks
 	elgg_register_plugin_hook_handler('cron', 'minute', 'ColdTrick\AWS\Cron::cleanupS3');
+	elgg_register_plugin_hook_handler('cron', 'minute', 'ColdTrick\AWS\Cron::uploadFilesToS3');
 }

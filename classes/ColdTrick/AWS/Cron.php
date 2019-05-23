@@ -89,6 +89,66 @@ class Cron {
 	}
 	
 	/**
+	 * Upload new files to S3
+	 *
+	 * @param string $hook   'cron'
+	 * @param string $type   'minute'
+	 * @param mixed  $return current return value
+	 * @param array  $params supplied params
+	 *
+	 * @return void
+	 */
+	public static function uploadFilesToS3($hook, $type, $return, $params) {
+		
+		$subtypes = aws_get_supported_upload_subtypes();
+		if (empty($subtypes)) {
+			return;
+		}
+		
+		// not used in this function, but only to check if correct config settings are done
+		$s3client = aws_get_s3_client();
+		if (empty($s3client)) {
+			return;
+		}
+		
+		echo "Starting AWS file upload" . PHP_EOL;
+		elgg_log("Starting AWS file upload");
+		
+		$starttime = microtime(true);
+		set_time_limit(0);
+		
+		$aws_marker = elgg_get_metastring_id('aws_object_url');
+		$dbprefix = elgg_get_config('dbprefix');
+		
+		$files = elgg_get_entities([
+			'type_subtype_pairs' => [
+				'object' => $subtypes,
+			],
+			'limit' => false,
+			'batch' => true,
+			'wheres' => [
+				"e.guid NOT IN (
+					SELECT entity_guid
+					FROM {$dbprefix}metadata
+					WHERE name_id = {$aws_marker}
+				)",
+			],
+		]);
+		
+		/* @var $file \ElggFile */
+		foreach ($files as $file) {
+			if (!self::timeLeft($starttime, 30)) {
+				break;
+			}
+			
+			aws_upload_file($file);
+		}
+		
+		echo "Done with AWS file upload" . PHP_EOL;
+		elgg_log("Done with AWS file upload");
+	}
+	
+	/**
 	 * Is there time left to run the script
 	 *
 	 * @param float $starttime   start time of execution

@@ -8,3 +8,11 @@ Amazon Web Services
 [![License](https://poser.pugx.org/coldtrick/aws/license.svg)](https://packagist.org/packages/coldtrick/aws)
 
 A wrapper plugin for access to the Amazon Web Service
+
+Developers
+----------
+
+To automaticly upload files to AWS S3 configure the S3 bucket settings and register the subtype of your entities with the plugin hook
+`upload:subtypes`, `aws:s3`. This plugin hook should return an array of subtypes which implement `ElggFile`.
+
+There is a generic `ElggFile` delete event listener which will remove any uploaded file from AWS S3 if it get removed from the community.

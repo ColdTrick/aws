@@ -186,3 +186,40 @@ function aws_parse_s3_uri($uri) {
 	
 	return false;
 }
+
+/**
+ * Get the supported subtyped for uploading to S3
+ *
+ * All returned subtypes are validated instances of an \ElggFile
+ *
+ * @return string[]
+ */
+function aws_get_supported_upload_subtypes() {
+	$defaults = [
+		'file',
+	];
+	
+	$subtypes = elgg_trigger_plugin_hook('upload:subtypes', 'aws:s3', ['default' => $defaults], $defaults);
+	if (empty($subtypes) || !is_array($subtypes)) {
+		return [];
+	}
+	
+	// validate that the given subtypes are an instanceof \ElggFile
+	foreach ($subtypes as $index => $subtype) {
+		$class = get_subtype_class('object', $subtype);
+		if (empty($class)) {
+			unset($subtypes[$index]);
+			continue;
+		}
+		
+		if ($class === \ElggFile::class || is_subclass_of($class, \ElggFile::class)) {
+			// correct implementation
+			continue;
+		}
+		
+		// unsupported class
+		unset($subtypes[$index]);
+	}
+	
+	return array_values($subtypes);
+}
