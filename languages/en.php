@@ -8,6 +8,7 @@ return [
 	'aws:settings:s3' => "Amazon Simple Storage Service (S3) configuration",
 	'aws:settings:s3:bucket' => "Bucket name",
 	'aws:settings:s3:scheme' => "Use HTTPS (recommended)",
+	'aws:settings:s3:upload_files' => "Upload files from the File plugin",
 	'aws:settings:s3:region' => "Region",
 	'aws:settings:s3:region:select' => "Please select a region from the list",
 	'aws:settings:s3:region:us-east-2' => "US East (Ohio)",

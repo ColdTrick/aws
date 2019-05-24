@@ -1,9 +1,5 @@
 <?php
 
-use Aws\Credentials\Credentials;
-use Aws\S3\S3Client;
-use Aws\S3\ObjectUploader;
-
 /* @var $plugin \ElggPlugin */
 $plugin = elgg_extract('entity', $vars);
 
@@ -67,6 +63,14 @@ $s3_config .= elgg_view_field([
 	'default' => 'http',
 	'value' => 'https',
 	'checked' => $plugin->s3_scheme !== 'http',
+]);
+
+$s3_config .= elgg_view_field([
+	'#type' => 'checkbox',
+	'#label' => elgg_echo('aws:settings:s3:upload_files'),
+	'name' => 'params[upload_files]',
+	'value' => 1,
+	'checked' => (bool) $plugin->upload_files,
 ]);
 
 echo elgg_view_module('inline', elgg_echo('aws:settings:s3'), $s3_config);

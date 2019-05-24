@@ -237,9 +237,7 @@ function aws_parse_s3_uri($uri) {
  * @return string[]
  */
 function aws_get_supported_upload_subtypes() {
-	$defaults = [
-		'file',
-	];
+	$defaults = [];
 	
 	$subtypes = elgg_trigger_plugin_hook('upload:subtypes', 'aws:s3', ['default' => $defaults], $defaults);
 	if (empty($subtypes) || !is_array($subtypes)) {

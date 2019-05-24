@@ -20,6 +20,7 @@ function aws_init() {
 	elgg_register_event_handler('delete', 'object', 'ColdTrick\AWS\Events::deleteObject');
 	
 	// plugin hooks
+	elgg_register_plugin_hook_handler('upload:subtypes', 'aws:s3', 'ColdTrick\AWS\Plugins\File::registerSubtypesForUpload');
 	elgg_register_plugin_hook_handler('cron', 'minute', 'ColdTrick\AWS\Cron::cleanupS3');
 	elgg_register_plugin_hook_handler('cron', 'minute', 'ColdTrick\AWS\Cron::uploadFilesToS3');
 }
