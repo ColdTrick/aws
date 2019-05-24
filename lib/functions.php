@@ -270,14 +270,20 @@ function aws_get_supported_upload_subtypes() {
  * Detect text in ElggFile
  *
  * @param ElggFile $entity the file to scan (should be an image)
- * @param array    $params result set filters
+ * @param array    $params result set filters, supported:
+ * 	- confidence (float)  How sure must the detected value be (0-100) (default: 90)
+ * 	- full       (bool)   Return the full detected text objects(true) or just the text (false) (default: false)
+ * 	- type       (string) Filter the returned results on their type (text or line)
  *
  * @return false|string[]|array
  */
 function aws_detect_text(ElggFile $entity, array $params = []) {
 	
-	
-	
+	$defaults = [
+		'confidence' => 90,
+		'full' => false,
+	];
+	$params = array_merge($defaults, $params);
 	
 	if (empty($entity->aws_object_url) || $entity->getSimpleType() !== 'image') {
 		return false;
@@ -308,5 +314,29 @@ function aws_detect_text(ElggFile $entity, array $params = []) {
 		return [];
 	}
 	
-	var_dump($texts);
+	// start filtering
+	$confidence = (float) elgg_extract('confidence', $params);
+	if ($confidence > 0) {
+		$texts = array_filter($texts, function ($value) use ($confidence) {
+			return ((float) elgg_extract('Confidence', $value) > $confidence);
+		});
+	}
+	
+	$type = strtoupper((string) elgg_extract('type', $params));
+	if (in_array($type, ['WORD', 'LINE'])) {
+		$texts = array_filter($texts, function ($value) use ($type) {
+			return elgg_extract('Type', $value) === $type;
+		});
+	}
+	
+	if ((bool) elgg_extract('full', $params)) {
+		return $texts;
+	}
+	
+	$result = [];
+	foreach ($texts as $text) {
+		$result[] = elgg_extract('DetectedText', $text);
+	}
+	
+	return $result;
 }
