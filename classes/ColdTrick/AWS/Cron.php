@@ -117,23 +117,13 @@ class Cron {
 		$starttime = microtime(true);
 		set_time_limit(0);
 		
-		$aws_marker = elgg_get_metastring_id('aws_object_url');
-		$dbprefix = elgg_get_config('dbprefix');
-		
-		$files = elgg_get_entities([
-			'type_subtype_pairs' => [
-				'object' => $subtypes,
-			],
+		$options = aws_get_uploaded_entity_options([
 			'limit' => false,
 			'batch' => true,
-			'wheres' => [
-				"e.guid NOT IN (
-					SELECT entity_guid
-					FROM {$dbprefix}metadata
-					WHERE name_id = {$aws_marker}
-				)",
-			],
+			'aws_inverted' => true,
 		]);
+		
+		$files = elgg_get_entities($options);
 		
 		/* @var $file \ElggFile */
 		foreach ($files as $file) {

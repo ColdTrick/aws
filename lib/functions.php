@@ -340,3 +340,45 @@ function aws_detect_text(ElggFile $entity, array $params = []) {
 	
 	return $result;
 }
+
+/**
+ * Get options for ege* functions with settings to check for AWS uploaded files
+ *
+ * @param array $params all supported ege* params, with some additions:
+ * 	- aws_inverted (bool) Get not yet uploaded entities (true) or uploaded entities (false) (default: false)
+ *
+ * @return false|array
+ */
+function aws_get_uploaded_entity_options(array $params = []) {
+	
+	$subtypes = aws_get_supported_upload_subtypes();
+	if (empty($subtypes)) {
+		return false;
+	}
+	
+	$options = [
+		'type_subtype_pairs' => [
+			'object' => $subtypes,
+		],
+		'wheres' => [],
+		'metadata_names' => [],
+	];
+	
+	$inverted = (bool) elgg_extract('aws_inverted', $params, false);
+	unset($params['aws_inverted']);
+	
+	if ($inverted) {
+		$dbprefix = elgg_get_config('dbprefix');
+		$aws_marker = elgg_get_metastring_id('aws_object_url');
+		
+		$options['wheres'][] = "e.guid NOT IN (
+			SELECT entity_guid
+			FROM {$dbprefix}metadata
+			WHERE name_id = {$aws_marker}
+		)";
+	} else {
+		$options['metadata_names'][] = 'aws_object_url';
+	}
+	
+	return array_merge_recursive($options, $params);
+}
