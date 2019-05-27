@@ -23,4 +23,7 @@ function aws_init() {
 	elgg_register_plugin_hook_handler('upload:subtypes', 'aws:s3', 'ColdTrick\AWS\Plugins\File::registerSubtypesForUpload');
 	elgg_register_plugin_hook_handler('cron', 'minute', 'ColdTrick\AWS\Cron::cleanupS3');
 	elgg_register_plugin_hook_handler('cron', 'minute', 'ColdTrick\AWS\Cron::uploadFilesToS3');
+	
+	// actions
+	elgg_register_action('aws/admin/reset_upload', __DIR__ . '/actions/aws/admin/reset_upload.php', 'admin');
 }
