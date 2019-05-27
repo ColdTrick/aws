@@ -359,7 +359,7 @@ function aws_get_uploaded_entity_options(array $params = []) {
 			'object' => $subtypes,
 		],
 		'wheres' => [],
-		'metadata_names' => [],
+		'metadata_name_value_pairs' => [],
 	];
 	
 	$inverted = (bool) elgg_extract('aws_inverted', $params, false);
@@ -375,7 +375,12 @@ function aws_get_uploaded_entity_options(array $params = []) {
 			WHERE name_id = {$aws_marker}
 		)";
 	} else {
-		$options['metadata_names'][] = 'aws_object_url';
+		$options['metadata_name_value_pairs'][] = [
+			'name' => 'aws_object_url',
+			'value' => '',
+			'operand' => '!=',
+			'case_sensitive' => false,
+		];
 	}
 	
 	return array_merge_recursive($options, $params);
