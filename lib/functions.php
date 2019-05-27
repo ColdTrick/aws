@@ -160,8 +160,8 @@ function aws_get_entity_key(ElggFile $entity) {
 	}
 	
 	// Store files in S3 under dir structure <bucket size>/guid.ext
-	$dir_locator = new EntityDirLocator($entity->guid);
-	$key = rtrim($dir_locator->getPath(), '/');
+	$dir_locator = new EntityDirLocator($entity->owner_guid);
+	$key = $dir_locator->getPath() . $entity->guid;
 	
 	$extension = pathinfo($entity->getFilenameOnFilestore(), PATHINFO_EXTENSION);
 	if (!empty($extension)) {
