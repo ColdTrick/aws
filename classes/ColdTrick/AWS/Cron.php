@@ -121,6 +121,7 @@ class Cron {
 			'limit' => false,
 			'batch' => true,
 			'aws_inverted' => true,
+			'order_by' => 'e.time_created ASC',
 		]);
 		
 		$files = elgg_get_entities($options);
