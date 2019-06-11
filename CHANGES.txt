@@ -1,2 +1,16 @@
 Version history
 ===============
+
+1.0 (2019-06-11):
+
+- added: api key plugin settings
+- added: aws sdk
+- added: basic plugin structure
+- added: cron uploading files to S3
+- added: detext text api
+- added: helper functions for upload file and fetch objects
+- added: helper function to get options for elgg_get_entities* functions
+- added: plugin setting to control file upload
+- added: reset upload action
+- added: s3 bucket configuration
+- fixed: aws key format
