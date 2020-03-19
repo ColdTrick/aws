@@ -16,6 +16,7 @@ echo elgg_view_field([
 	'name' => 'params[api_key_secret]',
 	'value' => $plugin->api_key_secret,
 	'class' => ['elgg-input-text'],
+	'always_empty' => false,
 ]);
 
 // Simple Storage Service (S3) config
