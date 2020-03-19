@@ -3,20 +3,18 @@
 namespace ColdTrick\AWS;
 
 use Elgg\EntityDirLocator;
+use Elgg\Database\Clauses\OrderByClause;
 
 class Cron {
 
 	/**
 	 * Cleanup files in AWS S3 bucket that have been removed from the community
 	 *
-	 * @param string $hook   'cron'
-	 * @param string $type   'minute'
-	 * @param mixed  $return current return value
-	 * @param array  $params supplied params
+	 * @param \Elgg\Hook $hook 'cron', 'minute'
 	 *
 	 * @return void
 	 */
-	public static function cleanupS3($hook, $type, $return, $params) {
+	public static function cleanupS3(\Elgg\Hook $hook) {
 		
 		$plugin = elgg_get_plugin_from_id('aws');
 		$dir_locator = new EntityDirLocator($plugin->guid);
@@ -91,14 +89,11 @@ class Cron {
 	/**
 	 * Upload new files to S3
 	 *
-	 * @param string $hook   'cron'
-	 * @param string $type   'minute'
-	 * @param mixed  $return current return value
-	 * @param array  $params supplied params
+	 * @param \Elgg\Hook $hook 'cron', 'minute'
 	 *
 	 * @return void
 	 */
-	public static function uploadFilesToS3($hook, $type, $return, $params) {
+	public static function uploadFilesToS3(\Elgg\Hook $hook) {
 		
 		$subtypes = aws_get_supported_upload_subtypes();
 		if (empty($subtypes)) {
@@ -121,7 +116,7 @@ class Cron {
 			'limit' => false,
 			'batch' => true,
 			'aws_inverted' => true,
-			'order_by' => 'e.time_created ASC',
+			'order_by' => new OrderByClause('e.time_created', 'ASC'),
 		]);
 		
 		$files = elgg_get_entities($options);

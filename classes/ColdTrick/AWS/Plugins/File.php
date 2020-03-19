@@ -7,14 +7,11 @@ class File {
 	/**
 	 * Register the correct subtypes for uploading to aws
 	 *
-	 * @param string $hook   'upload:subtypes'
-	 * @param string $type   'aws:s3'
-	 * @param array  $return current return value
-	 * @param array  $params supplied params
+	 * @param \Elgg\Hook $hook 'upload:subtypes', 'aws:s3'
 	 *
 	 * @return void|array
 	 */
-	public static function registerSubtypesForUpload($hook, $type, $return, $params) {
+	public static function registerSubtypesForUpload(\Elgg\Hook $hook) {
 		
 		if (!elgg_is_active_plugin('file')) {
 			return;
@@ -23,6 +20,8 @@ class File {
 		if (!elgg_get_plugin_setting('upload_files', 'aws')) {
 			return;
 		}
+		
+		$return = $hook->getValue();
 		
 		$return[] = 'file';
 		

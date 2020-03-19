@@ -3,6 +3,9 @@
 require_once(__DIR__ . '/lib/functions.php');
 
 return [
+	'settings' => [
+		's3_scheme' => 'https',
+	],
 	'actions' => [
 		'aws/admin/reset_upload' => [
 			'access' => 'admin',

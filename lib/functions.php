@@ -4,11 +4,12 @@
  */
 
 use Aws\Credentials\Credentials;
-use Aws\S3\S3Client;
-use Aws\S3\ObjectUploader;
-use Elgg\EntityDirLocator;
-use Aws\S3\S3UriParser;
 use Aws\Rekognition\RekognitionClient;
+use Aws\S3\ObjectUploader;
+use Aws\S3\S3Client;
+use Aws\S3\S3UriParser;
+use Elgg\Database\QueryBuilder;
+use Elgg\EntityDirLocator;
 
 /**
  * Get the aws credentials
@@ -35,7 +36,7 @@ function aws_get_s3_client() {
 	
 	$credentials = aws_get_credentials();
 	$region = elgg_get_plugin_setting('s3_region', 'aws');
-	$scheme = elgg_get_plugin_setting('s3_scheme', 'aws', 'https');
+	$scheme = elgg_get_plugin_setting('s3_scheme', 'aws');
 	
 	if (empty($credentials) || empty($region) || !in_array($scheme, ['http', 'https'])) {
 		return false;
@@ -68,7 +69,7 @@ function aws_get_rekognition_client() {
 	
 	$credentials = aws_get_credentials();
 	$region = elgg_get_plugin_setting('s3_region', 'aws');
-	$scheme = elgg_get_plugin_setting('s3_scheme', 'aws', 'https');
+	$scheme = elgg_get_plugin_setting('s3_scheme', 'aws');
 	
 	if (empty($credentials) || empty($region) || !in_array($scheme, ['http', 'https'])) {
 		return false;
@@ -366,14 +367,13 @@ function aws_get_uploaded_entity_options(array $params = []) {
 	unset($params['aws_inverted']);
 	
 	if ($inverted) {
-		$dbprefix = elgg_get_config('dbprefix');
-		$aws_marker = elgg_get_metastring_id('aws_object_url');
-		
-		$options['wheres'][] = "e.guid NOT IN (
-			SELECT entity_guid
-			FROM {$dbprefix}metadata
-			WHERE name_id = {$aws_marker}
-		)";
+		$options['wheres'][] = function (QueryBuilder $qb, $main_alias) {
+			$sub = $qb->subquery('metadata');
+			$sub->select('entity_guid')
+				->where($qb->compare('name', '=', 'aws_object_url', ELGG_VALUE_STRING));
+			
+			return $qb->compare("{$main_alias}.guid", 'NOT IN', $sub->getSQL());
+		};
 	} else {
 		$options['metadata_name_value_pairs'][] = [
 			'name' => 'aws_object_url',

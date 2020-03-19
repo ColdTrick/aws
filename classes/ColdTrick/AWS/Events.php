@@ -7,14 +7,13 @@ class Events {
 	/**
 	 * Listen to the delete of an \ELggObject to also remove it from AWS S3
 	 *
-	 * @param string      $event  'delete'
-	 * @param string      $type   'object'
-	 * @param \ElggObject $object the \ElggObject being removed
+	 * @param \Elgg\Event $event 'delete', 'object'
 	 *
 	 * @return void
 	 */
-	public static function deleteObject($event, $type, $object) {
+	public static function deleteObject(\Elgg\Event $event) {
 		
+		$object = $event->getObject();
 		if (!$object instanceof \ElggFile) {
 			// only \ElggFile objects (and extensions) are supported
 			return;
